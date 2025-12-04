@@ -12,12 +12,13 @@ let cycleType = 'monthly';
 let categoryBudgets = {}; 
 let currentTransactions = []; 
 let monthlyRecords = []; 
+// Removed: totalIncome, netFlow
 let totalExpenses = 0;
 let totalBudget = 0; 
 let currentView = 'current';
 let currentCycleStart = new Date().toISOString().split('T')[0]; 
 
-// --- Category Definitions ---
+// --- Category Definitions (INCOME REMOVED) ---
 const EXPENSE_CATEGORIES = [
     "Inventory Cost / Service Cost",
     "Administrative",
@@ -54,7 +55,7 @@ const formatCurrency = (amount) => {
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
 
 /**
- * Gets the display name for the current cycle period. (UPDATED)
+ * Gets the display name for the current cycle period.
  */
 const getCycleDisplay = () => {
     const date = new Date(currentCycleStart + 'T00:00:00');
@@ -63,7 +64,6 @@ const getCycleDisplay = () => {
     if (cycleType === 'weekly') {
         const end = new Date(date);
         end.setDate(end.getDate() + 6);
-        // NEW FORMAT: WEEKLY Cycle (MM/DD/YYYY to MM/DD/YYYY)
         return `WEEKLY Cycle (${date.toLocaleDateString(undefined, dateFormatOptions)} to ${end.toLocaleDateString(undefined, dateFormatOptions)})`;
     }
     
@@ -162,7 +162,7 @@ const saveData = () => {
 };
 
 /**
- * Calculates total expenses and budget variance.
+ * Calculates total expenses and budget variance. (INCOME REMOVED)
  */
 const calculateTotals = () => {
     
@@ -218,10 +218,11 @@ const saveCategoryBudgets = (event) => {
     const form = event.target;
     let newBudgets = { ...categoryBudgets }; 
     
-    const ALL_CATEGORIES_INCLUDING_INCOME = [...EXPENSE_CATEGORIES, ...Object.keys(categoryBudgets).filter(c => !EXPENSE_CATEGORIES.includes(c))];
+    // Only process EXPENSE categories in the form, retaining old dormant income budgets if present.
+    const ALL_CATEGORIES_TO_PROCESS = EXPENSE_CATEGORIES; 
     let valid = true;
 
-    ALL_CATEGORIES_INCLUDING_INCOME.forEach(category => {
+    ALL_CATEGORIES_TO_PROCESS.forEach(category => {
         const safeId = category.replace(/[^a-zA-Z0-9]/g, '');
         const input = form.querySelector(`#budget-input-${safeId}`);
         
@@ -409,7 +410,7 @@ const renderSettings = (isEditing = false) => {
         `).join('');
 
         container.innerHTML = `
-            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; border-bottom: 1px solid var(--olive-tint); padding-bottom: 8px;">
+            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
                 Application Settings
             </h2>
             <form id="settings-form">
@@ -435,8 +436,8 @@ const renderSettings = (isEditing = false) => {
         container.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <h2 style="font-size: 0.9rem; opacity:0.7; margin-bottom:4px;">Entity: ${companyName}</h2>
-                    <div style="font-size: 1.5rem; font-weight:bold; color:var(--light-text);">${currentCycleLabel} Cycle</div>
+                    <h2 style="font-size: 0.9rem; opacity:0.7; margin-bottom:4px; color: var(--text-secondary);">Entity: ${companyName}</h2>
+                    <div style="font-size: 1.5rem; font-weight:bold; color:var(--text-primary);">${currentCycleLabel} Cycle</div>
                 </div>
                 <button id="edit-settings-btn" class="btn btn-primary">Edit</button>
             </div>
@@ -504,7 +505,7 @@ const renderBudgetVisualization = () => {
 
     const spentColor = 'var(--expense-color)';
     const overColor = 'var(--primary-orange)';
-    const remainingColor = 'var(--income-color)';
+    const remainingColor = 'var(--success-complement)';
 
     const varianceLabel = isOver 
         ? `<span style="color: ${overColor}; font-weight: 700;">- ${formatCurrency(overspentAmount)} OVER BUDGET</span>`
@@ -512,6 +513,7 @@ const renderBudgetVisualization = () => {
     
     // 3. Build HTML Markup for the Horizontal Bar Chart
     let barMarkup;
+    // NOTE: --olive-tint is mapped to --bg-elevated
     if (isOver) {
         barMarkup = `
             <div style="height: 20px; background-color: ${spentColor}; width: 100%; border-radius: 4px; position: relative;">
@@ -535,7 +537,7 @@ const renderBudgetVisualization = () => {
         `;
     } else {
         barMarkup = `
-            <div style="height: 20px; background-color: var(--olive-tint); width: 100%; border-radius: 4px; position: relative;">
+            <div style="height: 20px; background-color: var(--bg-elevated); width: 100%; border-radius: 4px; position: relative;">
                 <div style="
                     height: 100%;
                     width: ${normalizedSpent.toFixed(1)}%;
@@ -625,7 +627,7 @@ const renderCategoryBudgetSetter = (isEditing = false) => {
             const varianceText = `${isPositiveVariance ? '+' : '-'}${formatCurrency(variance)}`;
             
             return `
-                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; font-size:0.9rem; padding: 4px 0; border-bottom: 1px dashed var(--olive-tint);">
+                <div style="display:grid; grid-template-columns: 2fr 2fr 2fr; font-size:0.9rem; padding: 6px 0; border-bottom: 1px dashed var(--border-light);">
                     <span style="font-weight: 600;">${category}</span>
                     <span style="font-weight:bold; color: var(--primary-orange);">${label}: ${formatCurrency(budget)}</span>
                     <span style="color: ${varianceColor};">${varianceText}</span>
@@ -639,7 +641,7 @@ const renderCategoryBudgetSetter = (isEditing = false) => {
         const expenseInputs = renderCategoryInputs(EXPENSE_CATEGORIES, 'Budget');
         
         container.innerHTML = `
-            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; border-bottom: 1px solid var(--olive-tint); padding-bottom: 8px;">
+            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
                 Set Expense Budgets
             </h2>
             <form id="set-budget-form">
@@ -665,7 +667,7 @@ const renderCategoryBudgetSetter = (isEditing = false) => {
                 <button id="edit-budget-btn" class="btn btn-primary">Edit Budgets</button>
             </div>
             
-            <h3 style="font-size: 1rem; color: var(--primary-orange); margin-top: 15px; border-top: 1px dashed var(--olive-tint); padding-top: 10px;">Expense Budgets (Variance)</h3>
+            <h3 style="font-size: 1rem; color: var(--primary-orange); margin-top: 15px; border-top: 1px dashed var(--border-light); padding-top: 10px;">Expense Budgets (Variance)</h3>
             <div style="max-height: 250px; overflow-y: auto;">
                 ${renderReadonlyList(EXPENSE_CATEGORIES, 'Expense')}
             </div>
@@ -684,7 +686,7 @@ const renderCategoryBreakdownChart = () => {
 
     if (sortedExpenses.length === 0 && totalBudget === 0) {
         return `
-            <div style="text-align: center; padding: 24px; color: var(--subtle-gray); opacity: 0.7;">
+            <div style="text-align: center; padding: 24px; color: var(--text-secondary); opacity: 0.7;">
                 <p>Set category budgets and log expenses to see the breakdown.</p>
             </div>
         `;
@@ -704,8 +706,8 @@ const renderCategoryBreakdownChart = () => {
         const spentColor = isOverspent ? 'var(--primary-orange)' : 'var(--expense-color)';
         
         const barWidth = isOverspent ? '100%' : `${normalizedSpent.toFixed(1)}%`;
-        const barContainerBg = isOverspent ? 'var(--primary-orange)' : 'var(--olive-tint)';
-        const barActualFill = isOverspent ? 'var(--hover-orange)' : spentColor;
+        const barContainerBg = 'var(--bg-elevated)';
+        const barActualFill = isOverspent ? 'var(--primary-orange)' : 'var(--expense-color)';
         
         return `
             <div style="margin-bottom: 18px;">
@@ -734,7 +736,7 @@ const renderCategoryBreakdownChart = () => {
     }).join('');
 
     return `
-        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px; color: var(--white-text);">
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">
             TOTAL EXPENSE BUDGET: ${formatCurrency(totalBudget)}
         </h3>
         <div id="category-chart-container" style="padding-top: 8px;">
@@ -761,7 +763,7 @@ const renderTransactionHistory = () => {
 
     if (currentTransactions.length === 0) {
         return `
-            <div style="text-align: center; padding: 24px; color: var(--subtle-gray); opacity: 0.7;">
+            <div style="text-align: center; padding: 24px; color: var(--text-secondary); opacity: 0.7;">
                 <p>No transactions logged for this cycle yet.</p>
             </div>
         `;
@@ -786,7 +788,7 @@ const renderTransactionHistory = () => {
             const icon = '<i class="bi bi-arrow-down-circle-fill"></i>';
 
             return `
-                <div class="transaction-item expense" style="border-left-width: 6px;">
+                <div class="transaction-item expense">
                     <div class="transaction-item-details">
                         <strong>${item.description}</strong>
                         <small>${item.category} | ${new Date(item.createdAt).toLocaleDateString()} ${new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
@@ -804,7 +806,7 @@ const renderTransactionHistory = () => {
 
         return `
             <div style="margin-bottom: 16px;">
-                <h4 style="margin: 0; padding: 8px 0; border-bottom: 1px dashed var(--olive-tint); font-size: 1rem; color: var(--light-text);">
+                <h4 style="margin: 0; padding: 8px 0; border-bottom: 1px dashed var(--border-light); font-size: 1rem; color: var(--text-primary);">
                     ${displayDate}
                 </h4>
                 ${dateTransactions}
@@ -821,8 +823,8 @@ const renderMonthlyHistory = () => {
     if (monthlyRecords.length === 0) {
         return `
             <div class="card" style="text-align: center; padding: 40px;">
-                <h3 style="color: var(--light-text);">No Cycle Archive Records Found</h3>
-                <p style="opacity: 0.7;">Finalize a cycle to see it appear in your history.</p>
+                <h3 style="color: var(--text-primary);">No Cycle Archive Records Found</h3>
+                <p style="color: var(--text-secondary); opacity: 0.7;">Finalize a cycle to see it appear in your history.</p>
             </div>
         `;
     }
@@ -851,9 +853,9 @@ const renderMonthlyHistory = () => {
 
                         return `
                             <div class="category-list-item" style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; font-size:0.85rem;">
-                                <span style="font-weight: 600;">${category}</span>
-                                <span style="font-weight: 600;">${formatCurrency(actualOrSpent)}</span>
-                                <span style="font-weight: 600;">${formatCurrency(budgetOrForecast)}</span>
+                                <span style="font-weight: 600; color: var(--text-primary);">${category}</span>
+                                <span style="font-weight: 600; color: var(--text-primary);">${formatCurrency(actualOrSpent)}</span>
+                                <span style="font-weight: 600; color: var(--text-primary);">${formatCurrency(budgetOrForecast)}</span>
                                 <span style="color: ${varianceColor}; font-weight: 700;">${varianceText}</span>
                             </div>
                         `;
@@ -864,10 +866,10 @@ const renderMonthlyHistory = () => {
                     <div class="history-record ${isOverBudget ? 'deficit' : ''}">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                             
-                            <h3 style="margin:0; font-size:1.2rem;"><i class="bi bi-calendar-event" style="font-size:1.2rem; padding-right: 8px;"></i>${record.cycleType.toUpperCase()} Cycle (${displayCycleStart})</h3>
+                            <h3 style="margin:0; font-size:1.2rem;"><i class="bi bi-calendar-event" style="margin-right: 8px;"></i>${record.cycleType.toUpperCase()} Cycle (${displayCycleStart})</h3>
                             
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-weight:bold; font-size:1rem; color:${isOverBudget ? 'var(--expense-color)' : 'var(--income-color)'};">
+                                <span style="font-weight:bold; font-size:1rem; color:${isOverBudget ? 'var(--expense-color)' : 'var(--success-complement)'};">
                                     Budget Variance
                                 </span>
                                 <button class="delete-btn" onclick="deleteCycleRecord('${record.id}')" title="Delete Cycle">
@@ -877,14 +879,14 @@ const renderMonthlyHistory = () => {
 
                         </div>
                         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; font-size:0.9rem; margin-bottom:12px;">
-                            <div>Total Budget: <strong style="color: var(--primary-orange);">${formatCurrency(record.startingBudget)}</strong></div>
+                            <div>Total Budget: <strong style="color: var(--primary);">${formatCurrency(record.startingBudget)}</strong></div>
                             <div>Total Expenses: <strong style="color: var(--expense-color);">${formatCurrency(record.totalExpenses)}</strong></div>
                             <div>Variance: <strong style="color: ${isOverBudget ? 'var(--primary-orange)' : 'var(--success-complement)'};">${formatCurrency(totalBudgetVariance)}</strong></div>
                         </div>
                         
                         <details style="margin-bottom: 15px;">
-                            <summary style="cursor:pointer; color:var(--primary-orange); font-size:0.9rem; font-weight:600;">View Category Budget Summary</summary>
-                            <div style="margin-top:12px; background:rgba(0,0,0,0.2); padding:12px; border-radius:8px;">
+                            <summary style="cursor:pointer; color:var(--primary); font-size:0.9rem; font-weight:600;">View Category Budget Summary</summary>
+                            <div style="margin-top:12px; background:var(--bg-elevated); padding:12px; border-radius:8px;">
                                 <div class="category-summary-header" style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr;">
                                     <span>Category</span>
                                     <span>Spent</span>
@@ -896,14 +898,14 @@ const renderMonthlyHistory = () => {
                         </details>
 
                         <details style="margin-top: 10px;">
-                             <summary style="cursor:pointer; color:var(--primary-orange); font-size:0.9rem; font-weight:600;">View ${record.transactions.length} Total Transactions</summary>
-                             <div style="margin-top:12px; background:rgba(0,0,0,0.2); padding:8px; border-radius:8px;">
+                             <summary style="cursor:pointer; color:var(--primary); font-size:0.9rem; font-weight:600;">View ${record.transactions.length} Total Transactions</summary>
+                             <div style="margin-top:12px; background:var(--bg-elevated); padding:8px; border-radius:8px;">
                                  ${record.transactions.map(t => `
-                                     <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.1); font-size:0.85rem;">
+                                     <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid var(--border-light); font-size:0.85rem;">
                                          <span style="color: var(--expense-color);">[EXPENSE]</span>
-                                         <span style="width: 30%;">${t.description} (${t.category})</span>
-                                         <span style="width: 35%; text-align: right;">${t.date} ${new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                         <span style="width: 10%; text-align: right;">${formatCurrency(t.amount)}</span>
+                                         <span style="width: 30%; color: var(--text-primary);">${t.description} (${t.category})</span>
+                                         <span style="width: 35%; text-align: right; color: var(--text-secondary);">${t.date} ${new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                         <span style="width: 10%; text-align: right; color: var(--text-primary);">${formatCurrency(t.amount)}</span>
                                      </div>
                                  `).join('')}
                              </div>
@@ -931,15 +933,19 @@ const renderApp = () => {
 
     appContainer.innerHTML = `
         <h1 class="app-header">
-            <span style="font-size: 2rem; margin-right: 8px; font-weight: bold;"></span>
-            ${companyName} Expense Monitor (${cycleDisplay})
+            <span>${companyName } Expense Monitor </span> 
+            <span style="font-size: 1rem; font-weight: 500; color: var(--text-secondary); margin-left: 12px;">(${cycleDisplay})</span>
         </h1>
         
         <section id="summary-section" class="card">
+            <!-- BUDGET UTILIZATION BAR GRAPH -->
             <div id="visualization-container">
                 ${renderBudgetVisualization()}
             </div>
+            <!-- END BUDGET UTILIZATION BAR GRAPH -->
+
             <div id="summary-grid" style="grid-template-columns: 1fr 1fr 1fr;"> 
+                <!-- Total Budget (Derived from Expense Categories) -->
                 <div class="summary-item budget-item">
                     <h2>TOTAL EXPENSE BUDGET</h2>
                     <p id="total-budget-display">
@@ -947,12 +953,14 @@ const renderApp = () => {
                     </p>
                 </div>
                 
+                <!-- Total Expenses -->
                 <div class="summary-item expense-item-summary">
                     <h2>TOTAL EXPENSES ACTUALS</h2>
                     <p id="total-expenses-display">
                         ${formatCurrency(exp)}
                     </p>
                 </div>
+                <!-- Budget Variance -->
                 <div class="summary-item ${isOverBudget ? 'net-flow-negative-item' : 'net-flow-positive-item'}">
                     <h2>BUDGET REMAINING</h2>
                     <p id="net-flow-display">
@@ -1050,16 +1058,18 @@ const renderCurrentCycleManager = () => {
             <div id="dashboard-main-column">
                 
                 <section class="card" id="add-transaction-card">
-                    <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; border-bottom: 1px solid var(--olive-tint); padding-bottom: 8px;">
+                    <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
                         Log New Expense (Outflow)
                     </h2>
                     <form id="add-transaction-form" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
                         
+                        <!-- Inputs -->
                         <input type="text" id="transaction-description-input" placeholder="Description/Merchant" required style="grid-column: span 2;" />
                         
                         <input type="number" id="transaction-amount-input" placeholder="Amount (150.75)"
                             min="0.01" step="0.01" required />
                         
+                        <!-- Dynamic Category Select -->
                         <select id="transaction-category-select" required>
                             <option value="" disabled selected>Select Category</option>
                         </select>
@@ -1073,14 +1083,14 @@ const renderCurrentCycleManager = () => {
                 </section>
                 
                 <section class="card" id="category-breakdown-card">
-                    <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; border-bottom: 1px solid var(--olive-tint); padding-bottom: 8px;">
+                    <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
                         Expense Budget Breakdown
                     </h2>
                     <div id="category-breakdown-container">
                         </div>
                 </section>
                 <section class="card" id="transaction-history-card" style="flex-grow: 1;">
-                    <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; border-bottom: 1px solid var(--olive-tint); padding-bottom: 8px;">
+                    <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
                         Transaction Log (Current Cycle)
                     </h2>
                     <div id="history-list-container" style="max-height: 400px; overflow-y: auto;">
@@ -1096,10 +1106,10 @@ const renderCurrentCycleManager = () => {
                 <section id="budget-setter-card" class="card"></section>
 
                 <section class="card" id="date-setter-card">
-                    <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; color: var(--primary-orange);">
+                    <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; color: var(--primary-main);">
                         Active Cycle Start: ${new Date(currentCycleStart).toLocaleDateString()}
                     </h2>
-                    <p style="font-size: 0.9rem; color: var(--light-text); margin-bottom: 12px;">
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">
                        Period: ${displayCycle}
                     </p>
                     <div style="display: flex; gap: 8px; align-items: center;">
@@ -1108,16 +1118,16 @@ const renderCurrentCycleManager = () => {
                             Set
                         </button>
                     </div>
-                    <p style="margin-top: 10px; font-size: 0.85rem; color: var(--light-text); opacity: 0.6;">
+                    <p style="margin-top: 10px; font-size: 0.85rem; color: var(--text-tertiary); opacity: 0.8;">
                         All records are aggregated based on this start date.
                     </p>
                 </section>
 
-                <section class="card" id="finalize-card" style="background-color: var(--olive-tint);">
-                    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--primary-orange); margin-bottom: 16px;">
+                <section class="card" id="finalize-card">
+                    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--primary-main);">
                         Archive Cycle
-                    </small>
-                    <p style="font-size: 0.9rem; color: var(--light-text); margin-bottom: 12px;">
+                    </h2>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">
                         Finalize and archive the current cycle (${displayCycle}). Next cycle starts ${nextCycleDisplay}.
                     </p>
                     <button id="finalize-cycle-btn" class="btn btn-primary" style="width: 100%;">
