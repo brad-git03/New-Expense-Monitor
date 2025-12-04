@@ -760,7 +760,7 @@ const renderTransactionHistory = () => {
     if (!container) return;
 
     if (currentTransactions.length === 0) {
-        container.innerHTML = `
+        return `
             <div style="text-align: center; padding: 24px; color: var(--subtle-gray); opacity: 0.7;">
                 <p>No transactions logged for this cycle yet.</p>
             </div>
@@ -850,7 +850,7 @@ const renderMonthlyHistory = () => {
 
 
                         return `
-                            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; font-size:0.85rem; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.1);">
+                            <div class="category-list-item" style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; font-size:0.85rem;">
                                 <span style="font-weight: 600;">${category}</span>
                                 <span style="font-weight: 600;">${formatCurrency(actualOrSpent)}</span>
                                 <span style="font-weight: 600;">${formatCurrency(budgetOrForecast)}</span>
@@ -885,7 +885,7 @@ const renderMonthlyHistory = () => {
                         <details style="margin-bottom: 15px;">
                             <summary style="cursor:pointer; color:var(--primary-orange); font-size:0.9rem; font-weight:600;">View Category Budget Summary</summary>
                             <div style="margin-top:12px; background:rgba(0,0,0,0.2); padding:12px; border-radius:8px;">
-                                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; font-weight: 700; color: var(--light-text); border-bottom: 1px solid var(--subtle-gray); padding-bottom: 5px;">
+                                <div class="category-summary-header" style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr;">
                                     <span>Category</span>
                                     <span>Spent</span>
                                     <span>Budget</span>
@@ -1066,7 +1066,7 @@ const renderCurrentCycleManager = () => {
                         
                         <input type="date" id="transaction-date-input" style="grid-column: span 2;" max="${today}" required />
 
-                        <button type="submit" class="btn btn-primary" style="grid-column: 2 / 5;">
+                        <button type="submit" class="btn btn-primary" style="grid-column: 1 / 5;">
                             Log Expense for Current Cycle
                         </button>
                     </form>
@@ -1116,7 +1116,7 @@ const renderCurrentCycleManager = () => {
                 <section class="card" id="finalize-card" style="background-color: var(--olive-tint);">
                     <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--primary-orange); margin-bottom: 16px;">
                         Archive Cycle
-                    </h2>
+                    </small>
                     <p style="font-size: 0.9rem; color: var(--light-text); margin-bottom: 12px;">
                         Finalize and archive the current cycle (${displayCycle}). Next cycle starts ${nextCycleDisplay}.
                     </p>
