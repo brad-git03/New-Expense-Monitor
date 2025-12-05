@@ -491,7 +491,7 @@ const renderBudgetVisualization = () => {
     if (monthlyBudgetDisplay <= 0 && exp === 0) {
         return `
             <div style="text-align: center; padding: 24px; width: 100%;">
-                <h3 style="color: var(--primary-orange);">Category Budgets Not Set</h3>
+                <h3 style="color: var(--primary-black);">Category Budgets Not Set</h3>
                 <p style="opacity: 0.8;">Set your category budgets in the sidebar to view utilization.</p>
             </div>
         `;
@@ -504,7 +504,7 @@ const renderBudgetVisualization = () => {
     const remainingAmount = variance;
 
     const spentColor = 'var(--expense-color)';
-    const overColor = 'var(--primary-orange)';
+    const overColor = 'var(--primary-black)';
     const remainingColor = 'var(--success-complement)';
 
     const varianceLabel = isOver 
@@ -595,7 +595,7 @@ const renderCategoryBudgetSetter = (isEditing = false) => {
         return categoryList.map(category => {
             const safeId = category.replace(/[^a-zA-Z0-9]/g, '');
             const currentValue = categoryBudgets[category] !== undefined ? categoryBudgets[category].toFixed(2) : '0.00';
-            const color = 'var(--primary-orange)';
+            const color = 'var(--primary-black)';
             
             return `
                 <div style="margin-bottom: 12px;">
@@ -623,11 +623,11 @@ const renderCategoryBudgetSetter = (isEditing = false) => {
             // Variance calculation: Expense (Budget - Spent)
             const variance = budget - actual;
             const isPositiveVariance = variance >= 0;
-            const varianceColor = isPositiveVariance ? 'var(--success-complement)' : 'var(--primary-orange)';
+            const varianceColor = isPositiveVariance ? 'var(--success-complement)' : 'var(--primary-black)';
             const varianceText = `${isPositiveVariance ? '+' : '-'}${formatCurrency(variance)}`;
             
             return `
-                <div style="display:grid; grid-template-columns: 2fr 2fr 2fr; font-size:0.9rem; padding: 6px 0; border-bottom: 1px dashed var(--border-light);">
+                <div style="display:grid; grid-template-columns: 3fr 3fr 3fr; font-size:0.9rem; padding: 6px 0; border-bottom: 1px dashed var(--border-light);">
                     <span style="font-weight: 600;">${category}</span>
                     <span style="font-weight:bold; color: var(--primary-orange);">${label}: ${formatCurrency(budget)}</span>
                     <span style="color: ${varianceColor};">${varianceText}</span>
@@ -647,7 +647,7 @@ const renderCategoryBudgetSetter = (isEditing = false) => {
             <form id="set-budget-form">
                 <div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
                     
-                    <h3 style="font-size: 1.1rem; color: var(--primary-orange); margin-top: 0;">Expense Budgets (Outflow)</h3>
+                    <h3 style="font-size: 1.1rem; color: var(--primary-black); margin-top: 0;">Expense Budgets (Outflow)</h3>
                     ${expenseInputs}
 
                 </div>
@@ -662,12 +662,12 @@ const renderCategoryBudgetSetter = (isEditing = false) => {
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
                     <h2 style="font-size: 0.9rem; opacity:0.7; margin-bottom:4px;">TOTAL EXPENSE BUDGET</h2>
-                    <div style="font-size: 1.5rem; font-weight:bold; color:var(--primary-orange);">${totalBudgetDisplay}</div>
+                    <div style="font-size: 1.5rem; font-weight:bold; color:var(--primary-black);">${totalBudgetDisplay}</div>
                 </div>
                 <button id="edit-budget-btn" class="btn btn-primary">Edit Budgets</button>
             </div>
             
-            <h3 style="font-size: 1rem; color: var(--primary-orange); margin-top: 15px; border-top: 1px dashed var(--border-light); padding-top: 10px;">Expense Budgets (Variance)</h3>
+            <h3 style="font-size: 1rem; color: var(--primary-black); margin-top: 15px; border-top: 1px dashed var(--border-light); padding-top: 10px;">Expense Budgets (Variance)</h3>
             <div style="max-height: 250px; overflow-y: auto;">
                 ${renderReadonlyList(EXPENSE_CATEGORIES, 'Expense')}
             </div>
@@ -700,14 +700,14 @@ const renderCategoryBreakdownChart = () => {
         
         const isOverspent = variance < 0;
         const varianceText = isOverspent ? 
-            `<span style="color: var(--primary-orange);">- ${formatCurrency(variance)} Over</span>` :
+            `<span style="color: var(--primary-black);">- ${formatCurrency(variance)} Over</span>` :
             `<span style="color: var(--success-complement);">${formatCurrency(variance)} Left</span>`;
 
-        const spentColor = isOverspent ? 'var(--primary-orange)' : 'var(--expense-color)';
+        const spentColor = isOverspent ? 'var(--primary-black)' : 'var(--expense-color)';
         
         const barWidth = isOverspent ? '100%' : `${normalizedSpent.toFixed(1)}%`;
         const barContainerBg = 'var(--bg-elevated)';
-        const barActualFill = isOverspent ? 'var(--primary-orange)' : 'var(--expense-color)';
+        const barActualFill = isOverspent ? 'var(--primary-black)' : 'var(--expense-color)';
         
         return `
             <div style="margin-bottom: 18px;">
@@ -844,7 +844,7 @@ const renderMonthlyHistory = () => {
                         let budgetOrForecast = data.budget || 0;
                         let actualOrSpent = data.spent || 0;
                         const variance = data.variance || 0;
-                        const varianceColor = variance >= 0 ? 'var(--success-complement)' : 'var(--primary-orange)';
+                        const varianceColor = variance >= 0 ? 'var(--success-complement)' : 'var(--primary-black)';
                         const varianceText = `${variance >= 0 ? '+' : '-'}${formatCurrency(variance)} ${variance >= 0 ? 'Saved' : 'Over'}`;
 
                         const typeLabel = 'Budget';
@@ -881,7 +881,7 @@ const renderMonthlyHistory = () => {
                         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; font-size:0.9rem; margin-bottom:12px;">
                             <div>Total Budget: <strong style="color: var(--primary);">${formatCurrency(record.startingBudget)}</strong></div>
                             <div>Total Expenses: <strong style="color: var(--expense-color);">${formatCurrency(record.totalExpenses)}</strong></div>
-                            <div>Variance: <strong style="color: ${isOverBudget ? 'var(--primary-orange)' : 'var(--success-complement)'};">${formatCurrency(totalBudgetVariance)}</strong></div>
+                            <div>Variance: <strong style="color: ${isOverBudget ? 'var(--primary-black)' : 'var(--success-complement)'};">${formatCurrency(totalBudgetVariance)}</strong></div>
                         </div>
                         
                         <details style="margin-bottom: 15px;">
